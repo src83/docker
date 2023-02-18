@@ -1,0 +1,117 @@
+FROM php:7.3-fpm
+
+ARG PROJECT_NAME
+ARG NODE_VERSION
+ARG NPM_VERSION
+ARG TIME_ZONE
+ARG INSTALL_XDEBUG
+
+ENV DEBIAN_FRONTEND noninteractive
+
+## Install dependencies
+RUN apt update && apt -y upgrade
+RUN apt -y install --no-install-recommends apt-utils
+RUN apt -y install \
+    cron \
+    supervisor \
+    dnsutils \
+    git \
+    htop \
+    libmcrypt-dev \
+    libssl-dev \
+    libtool \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    build-essential \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    mc \
+    mariadb-client \
+    net-tools \
+    nmap \
+    smartmontools \
+    traceroute \
+    sudo \
+    wget \
+    zip
+
+# Install extensions
+RUN docker-php-ext-install pdo_mysql mysqli bcmath exif pcntl
+
+RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
+ && docker-php-ext-install gd
+
+RUN docker-php-ext-configure zip --with-libzip=/usr/include \
+ && docker-php-ext-install zip
+
+# Install NodeJS
+RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash -
+RUN apt -y install nodejs yarn
+RUN ln -s /usr/bin/node /usr/bin/nodejs
+RUN npm install -g npm@${NPM_VERSION}
+
+# Install redis (extension)
+RUN pecl install -o -f redis \
+ && rm -rf /tmp/pear \
+ && docker-php-ext-enable redis
+
+# Install imagick
+RUN apt-get install -y libmagickwand-6.q16-dev --no-install-recommends \
+    && ln -s /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16/MagickWand-config /usr/bin \
+    && pecl install imagick \
+    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini
+
+# Clear cache
+RUN apt clean && rm -rf /var/lib/apt/lists/*
+
+
+# General settings
+RUN ln -snf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime && echo ${TIME_ZONE} > /etc/timezone
+
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy custom config files into container
+COPY local.ini                   /usr/local/etc/php/conf.d/local.ini
+COPY php-fpm-custom.conf         /usr/local/etc/php-fpm.d/php-fpm-custom.conf
+COPY supervisord.conf            /etc/supervisor/supervisord.conf
+COPY supervisor-worker.conf      /etc/supervisor/conf.d/supervisor-worker.conf
+COPY docker-php-ext-xdebug-3.ini /var/tmp/docker-php-ext-xdebug.ini
+
+# Add user for laravel application
+RUN groupadd -g 1000 user
+RUN useradd -u 1000 -ms /bin/bash -g user user
+RUN usermod -aG www-data user
+RUN usermod -aG sudo user
+
+# Append Laravel schedule into crontab
+RUN (sudo -u user echo "* * * * * /usr/local/bin/php /srv/app/artisan schedule:run >> /var/log/crontab/crontab.log 2>&1") >> /etc/cron.d/restart-cron
+RUN usermod -aG crontab user
+RUN chgrp crontab /usr/bin/crontab
+RUN chmod g+s /usr/bin/crontab
+RUN chmod u+s /usr/sbin/cron
+RUN crontab -u user /etc/cron.d/restart-cron
+
+# Install xDebug (check version here: https://xdebug.org/docs/compat#versions)
+RUN if [ ${INSTALL_XDEBUG} = true ]; \
+    then \
+      pecl install xdebug-3.1.0 && docker-php-ext-enable xdebug; \
+      mkdir -p /var/log/xdebug; \
+      chmod -R 775 /var/log/xdebug && chown -R 1000.1000 /var/log/xdebug; \
+      mv /var/tmp/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
+    fi;
+
+USER user
+
+# Expose port and start php-fpm server
+EXPOSE 9000 9001
+
+# Set working directory
+WORKDIR /srv/app
+
+ENV DOCUMENT_ROOT=/srv/app
+
+CMD supervisord && cron && php-fpm

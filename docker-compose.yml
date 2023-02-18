@@ -1,0 +1,121 @@
+version: "3.9"
+
+
+# Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+# Docker Volumes
+volumes:
+  db-data:
+    driver: local
+  redis-data:
+    driver: local
+
+
+services:
+
+  # Database service 'db' (MySQL || MariaDB)
+  db:
+    build:
+      context: ./containers/mysql
+      dockerfile: Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE:-UTC}
+    container_name: ${PROJECT_NAME}_db
+    env_file:
+      - ./containers/mysql/database.env
+    hostname: mysql
+    restart: unless-stopped
+    tty: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+      - ./dumps/mysql:/var/backups/archives
+    networks:
+      - app-network
+
+
+  # Storage service 'redis'
+  redis:
+    build:
+      context: ./containers/redis
+      dockerfile: Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE:-UTC}
+    container_name: ${PROJECT_NAME}_redis
+    hostname: redis
+    restart: unless-stopped
+    privileged: true
+    sysctls:
+      net.core.somaxconn: 1024
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./logs/redis:/var/log/redis
+    networks:
+      - app-network
+
+
+  # Web service 'nginx'
+  nginx:
+    build:
+      context: ./containers/nginx
+      dockerfile: Dockerfile
+      args:
+        PROJECT_ENV: ${PROJECT_ENV}
+        TIME_ZONE: ${TIME_ZONE:-UTC}
+    container_name: ${PROJECT_NAME}_nginx
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - php
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../app:/srv/app
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - app-network
+
+
+  # PHP service 'php-fpm'
+  php:
+    build:
+      context: ./containers/php-fpm
+      dockerfile: Dockerfile
+      args:
+        PROJECT_NAME: ${PROJECT_NAME}
+        NODE_VERSION: ${NODE_VERSION}
+        NPM_VERSION: ${NPM_VERSION}
+        TIME_ZONE: ${TIME_ZONE:-UTC}
+        INSTALL_XDEBUG: ${INSTALL_XDEBUG:-false}
+    environment:
+      PHP_IDE_CONFIG: serverName=Docker
+    container_name: ${PROJECT_NAME}_php
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "9000:9000"
+    working_dir: /srv/app
+    user: "1000:1000"
+    volumes:
+      - ../app:/srv/app
+      - ~/.ssh:/home/user/.ssh
+      - ./logs/php-fpm/php:/var/log/php
+      - ./logs/php-fpm/crontab:/var/log/crontab
+      - ./logs/php-fpm/supervisor:/var/log/supervisor
+      - ./logs/php-fpm/xdebug:/var/log/xdebug
+     #- /etc/letsencrypt:/etc/letsencrypt/live/domain.loc
+    networks:
+      - app-network

@@ -1,0 +1,7 @@
+.env
+Makefile
+./containers/mysql/database.env
+./containers/mysql/Dockerfile
+./containers/php-fpm/Dockerfile
+
+.idea/

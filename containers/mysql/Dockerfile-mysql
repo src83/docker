@@ -1,0 +1,38 @@
+FROM mysql:latest
+
+ARG TIME_ZONE
+
+## Install dependencies
+RUN apt update
+RUN apt -y upgrade
+RUN apt -y install --no-install-recommends apt-utils
+RUN apt -y install htop locales vim mc sudo net-tools
+
+# Clear cache
+RUN apt clean && rm -rf /var/lib/apt/lists/*
+
+
+# General settings
+RUN ln -snf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime && echo ${TIME_ZONE} > /etc/timezone
+
+# Copy default config file into container
+COPY mysqld_custom.cnf /etc/mysql/conf.d/mysqld_custom.cnf
+
+# Copy init script into container
+COPY init-logs.sh /usr/local/bin/init-logs.sh
+RUN chmod +x /usr/local/bin/init-logs.sh
+
+# Copy backup script into container
+COPY get-dump.sh /usr/local/bin/get-dump.sh
+RUN chmod +x /usr/local/bin/get-dump.sh
+
+# Create dump dirs
+RUN mkdir -p /var/backups/dump \
+ && mkdir -p /var/backups/archives
+
+# Permissions and Ownership correction
+RUN chmod -R 777 /var/backups/* \
+ && chown -R 1000.1000 /var/backups/*
+
+
+# NOTE: Don't run any CMD here!
