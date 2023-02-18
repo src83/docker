@@ -5,3 +5,5 @@ Makefile
 ./containers/php-fpm/Dockerfile
 
 .idea/
+dumps/
+logs/
