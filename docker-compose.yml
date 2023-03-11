@@ -107,6 +107,9 @@ services:
       - redis
     ports:
       - "9000:9000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "${PROJECT_DOMAIN}:host-gateway"
     working_dir: /srv/app
     user: "1000:1000"
     volumes:
