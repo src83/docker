@@ -117,6 +117,9 @@ sudo docker run -it --rm --name certbot \
 Ожидаемый ответ - что-то вроде: 
 `Docker Compose version v2.5.1`
 
+7. Добавляем группу:
+`sudo usermod -a -G docker user`
+
 ...
 
 **Для переключения проекта на другие версии PHP или DB**
