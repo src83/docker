@@ -36,7 +36,7 @@
 
 ### Настроить (или проверить) конфиги сборки
 * cp .env.blank .env
-* Настроить `.env`. Можно указать только параметры `PROJECT_NAME` и `COMPOSE_PROJECT_NAME`, остальное оставить как есть.
+* Настроить `.env`. Можно указать только параметры `PROJECT_NAME`, `PROJECT_DOMAIN` и `COMPOSE_PROJECT_NAME`, остальное оставить как есть.
 
 * cp blank.Makefile Makefile
 * Настроить `Makefile` В `Configure section` указать параметр `project_name`. Значение то же самое, что и в предыдущем пункте.
@@ -44,10 +44,10 @@
 * cp containers/mysql/database.blank.env containers/mysql/database.env
 * Настроить `containers/mysql/database.env`
 
-* Настроить `containers/nginx/blank/local.conf` Указать нужное значения для параметра `server_name`
+* Настроить при необходимости `containers/nginx/blank/local.conf`. По умолчанию, параметр `server_name` указан как универсальный `_`.
 
 * cd containers/php-fpm
-* Создать симлинк `ln -s Dockerfile-php8.1 Dockerfile` на 8.1 or another available php version
+* Создать симлинк `ln -s Dockerfile-php8.1 Dockerfile` на 8.1 или иную доступную версию PHP.
 
 * cd containers/mysql
 * Создать симлинк на одну из СУБД: `ln -s Dockerfile-mariadb Dockerfile` or `ln -s Dockerfile-mysql Dockerfile`
