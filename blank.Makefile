@@ -61,9 +61,9 @@ build_nocache:  # Build containers NOT from cache
 build:  # Build containers
 	@docker-compose build
 
-rebuild: down build up_d init_logs    # ReBuild && UP containers
+rebuild: down build up_d    # ReBuild && UP containers
 
-up: up_d init_logs    # Load docker images and create containers and UP containers
+up: up_d    # Load docker images and create containers and UP containers
 
 down:   # Контейнеры стопаются и удаляются. Если БД не в волуме, то ВМЕСТЕ С БД!
 	@docker-compose down
@@ -109,10 +109,6 @@ ownership: # Set ownership on folders and files
 	@sudo find ./dumps/* -type d -exec chmod 775 {} \;
 	@sudo find ./logs/* -type f -exec chmod 666 {} \;
 
-init_logs:  # Create symlink to framework logs folder
-	@cd ./logs/ && ln -snf ../../app/storage/logs project
-	@docker-compose exec $(db_service) init-logs.sh
-
 up_d:  # Up containers with shell detach
 	@docker-compose up -d
 
@@ -130,7 +126,9 @@ drop_volume_redis:  # Drop Redis volume
 
 drop_volumes: drop_volume_db drop_volume_redis  # Drop DB and Redis volumes
 
-clean: down drop_volumes drop_images  # Drop DB, Redis volumes and related images
+clean: down drop_images drop_volumes  # Drop DB, Redis volumes and related images
+
+drop: down drop_images  # Drop DB and related images
 
 
 #####################################
