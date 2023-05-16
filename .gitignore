@@ -1,8 +1,10 @@
 .env
 Makefile
-containers/mysql/database.env
+database.env
+
 containers/mysql/Dockerfile
 containers/php-fpm/Dockerfile
+containers/nginx/configs
 
 .idea/
 dumps/

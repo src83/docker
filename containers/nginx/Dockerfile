@@ -41,7 +41,7 @@ RUN rm -f /etc/nginx/fastcgi_params \
 /etc/nginx/conf.d/default.conf
 
 # Setup main config
-RUN ln -s /etc/nginx/blank/${PROJECT_ENV}.conf /etc/nginx/conf.d/default.conf
+RUN ln -s /etc/nginx/configs/local.conf /etc/nginx/conf.d/default.conf
 
 # Expose ports and start Nginx server
 EXPOSE 80 443

@@ -35,18 +35,16 @@
 * Важно, чтобы корень проекта был в самой папке `app`. Таким образом, правильный путь к индексному файлу будет `myProject/app/public/index.php`
 
 ### Настроить (или проверить) конфиги сборки
-* Запустить `init.sh` - будут созданы каталоги `dumps` и `logs` с подкаталогами. 
+* Запустить `init.sh` - будут созданы каталоги `dumps` и `logs` с подкаталогами и добавлены некоторые конфиги. 
 
-* cp .env.blank .env
 * Настроить `.env`. Можно указать только параметры `PROJECT_NAME`, `PROJECT_DOMAIN` и `COMPOSE_PROJECT_NAME`, остальное оставить как есть.
 
-* cp blank.Makefile Makefile
 * Настроить `Makefile` В `Configure section` указать параметр `project_name`. Значение то же самое, что и в предыдущем пункте.
 
-* cp containers/mysql/database.blank.env containers/mysql/database.env
 * Настроить `containers/mysql/database.env`
 
-* Настроить при необходимости `containers/nginx/blank/local.conf`. По умолчанию, параметр `server_name` указан как универсальный `_`.
+* Настройка Nginx: нужно скопировать из папки `example` нужные конфиги в папку `configs`. При этом, копирование из папок `1-main` и `2-parts` - обязательно.
+* Настроить все в папке `containers/nginx/configs`. Для одиночного домена, параметр `server_name` по умолчанию указан как универсальный `_`.
 
 * cd containers/php-fpm
 * Создать симлинк `ln -s Dockerfile-php8.1 Dockerfile` на 8.1 или иную доступную версию PHP.
