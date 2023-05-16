@@ -3,12 +3,12 @@ FROM redis:7.0.0
 ARG TIME_ZONE
 
 ## Install dependencies
-RUN apt update && apt -y upgrade
-RUN apt -y install --no-install-recommends apt-utils
-RUN apt -y install htop locales vim mc
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get -y install --no-install-recommends apt-utils
+RUN apt-get -y install htop locales vim mc
 
 # Clear cache
-RUN apt clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
 # General settings
