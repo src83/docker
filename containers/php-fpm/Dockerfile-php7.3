@@ -24,6 +24,7 @@ RUN apt -y install \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
+    libicu-dev \
     locales \
     build-essential \
     jpegoptim optipng pngquant gifsicle \
@@ -39,7 +40,7 @@ RUN apt -y install \
     zip
 
 # Install extensions
-RUN docker-php-ext-install pdo_mysql mysqli bcmath exif pcntl
+RUN docker-php-ext-install pdo_mysql mysqli bcmath exif pcntl intl
 
 RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
  && docker-php-ext-install gd
