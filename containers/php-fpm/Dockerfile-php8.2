@@ -17,6 +17,7 @@ RUN apt -y install \
     dnsutils \
     git \
     htop \
+    iputils-ping \
     libmcrypt-dev \
     libssl-dev \
     libtool \
@@ -34,6 +35,7 @@ RUN apt -y install \
     net-tools \
     nmap \
     smartmontools \
+    telnet \
     traceroute \
     sudo \
     wget \
@@ -51,7 +53,6 @@ RUN docker-php-ext-configure zip \
 # Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN apt -y install nodejs yarn
-RUN ln -s /usr/bin/node /usr/bin/nodejs
 RUN npm install -g npm@${NPM_VERSION}
 
 # Install redis (extension)
@@ -60,10 +61,9 @@ RUN pecl install -o -f redis \
  && docker-php-ext-enable redis
 
 # Install imagick
-RUN apt-get install -y libmagickwand-6.q16-dev --no-install-recommends \
-    && ln -s /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16/MagickWand-config /usr/bin \
+RUN apt-get install -y libmagickwand-dev \
     && pecl install imagick \
-    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini
+	&& docker-php-ext-enable imagick
 
 # Clear cache
 RUN apt clean && rm -rf /var/lib/apt/lists/*
