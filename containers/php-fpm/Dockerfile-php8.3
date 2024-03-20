@@ -1,4 +1,4 @@
-FROM php:7.1-fpm
+FROM php:8.3-fpm
 
 ARG PROJECT_NAME
 ARG NODE_VERSION
@@ -17,6 +17,7 @@ RUN apt -y install \
     dnsutils \
     git \
     htop \
+    iputils-ping \
     libmcrypt-dev \
     libssl-dev \
     libtool \
@@ -34,6 +35,7 @@ RUN apt -y install \
     net-tools \
     nmap \
     smartmontools \
+    telnet \
     traceroute \
     sudo \
     wget \
@@ -42,16 +44,15 @@ RUN apt -y install \
 # Install extensions
 RUN docker-php-ext-install pdo_mysql mysqli bcmath exif pcntl intl
 
-RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/ \
+RUN docker-php-ext-configure gd \
  && docker-php-ext-install gd
 
-RUN docker-php-ext-configure zip --with-libzip=/usr/include \
+RUN docker-php-ext-configure zip \
  && docker-php-ext-install zip
 
 # Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN apt -y install nodejs yarn
-RUN ln -s /usr/bin/node /usr/bin/nodejs
 RUN npm install -g npm@${NPM_VERSION}
 
 # Install redis (extension)
@@ -60,10 +61,9 @@ RUN pecl install -o -f redis \
  && docker-php-ext-enable redis
 
 # Install imagick
-RUN apt-get install -y libmagickwand-6.q16-dev --no-install-recommends \
-    && ln -s /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16/MagickWand-config /usr/bin \
+RUN apt-get install -y libmagickwand-dev \
     && pecl install imagick \
-    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini
+	&& docker-php-ext-enable imagick
 
 # Clear cache
 RUN apt clean && rm -rf /var/lib/apt/lists/*
@@ -80,7 +80,7 @@ COPY local.ini                   /usr/local/etc/php/conf.d/local.ini
 COPY php-fpm-custom.conf         /usr/local/etc/php-fpm.d/php-fpm-custom.conf
 COPY supervisord.conf            /etc/supervisor/supervisord.conf
 COPY supervisor-worker.conf      /etc/supervisor/conf.d/supervisor-worker.conf
-COPY docker-php-ext-xdebug-2.ini /var/tmp/docker-php-ext-xdebug.ini
+COPY docker-php-ext-xdebug-3.ini /var/tmp/docker-php-ext-xdebug.ini
 
 # Add user for laravel application
 RUN groupadd -g 1000 user
@@ -99,7 +99,7 @@ RUN crontab -u user /etc/cron.d/restart-cron
 # Install xDebug (check version here: https://xdebug.org/docs/compat#versions)
 RUN if [ ${INSTALL_XDEBUG} = true ]; \
     then \
-      pecl install xdebug-2.9.0 && docker-php-ext-enable xdebug; \
+      pecl install xdebug-3.3.1 && docker-php-ext-enable xdebug; \
       mkdir -p /var/log/xdebug; \
       chmod -R 775 /var/log/xdebug && chown -R 1000.1000 /var/log/xdebug; \
       mv /var/tmp/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \

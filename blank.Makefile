@@ -22,12 +22,14 @@ project_name =
 container_nginx = $(project_name)_nginx
 container_redis = $(project_name)_redis
 container_db = $(project_name)_db
+container_ch = $(project_name)_ch
 container_php = $(project_name)_php
 php_service = php
 db_service = db
 # Got it from docker-compose.yml ('Docker Volumes' section)
 volume_db = $(project_name)_db-data
 volume_redis = $(project_name)_redis-data
+volume_ch = $(project_name)_ch-data
 
 
 #####################################
@@ -36,16 +38,16 @@ volume_redis = $(project_name)_redis-data
 ###                               ###
 #####################################
 
-# Show all started containers
-ps:
+.PHONY: ps
+ps: ## Show all started containers
 	@docker ps
 
-# Show all enabled containers
-psa:
+.PHONY: psa
+psa: ## Show all enabled containers
 	@docker ps -a
 
-# Show all listen ports
-listen:
+.PHONY: listen
+listen: ## Show all listen ports
 	@netstat -natp | grep LISTEN
 
 
@@ -55,26 +57,34 @@ listen:
 ###                               ###
 #####################################
 
-build_nocache:  # Build containers NOT from cache
+.PHONY: build_nocache
+build_nocache: ## Build containers NOT from cache
 	@docker-compose build --no-cache
 
-build:  # Build containers
+.PHONY: build
+build: # Build containers
 	@docker-compose build
 
-rebuild: down build up_d    # ReBuild && UP containers
+.PHONY: rebuild
+rebuild: down build up_d ## ReBuild && UP containers
 
-up: up_d    # Load docker images and create containers and UP containers
+.PHONY: up
+up: up_d ## Load docker images and create containers and UP containers
 
-down:   # Контейнеры стопаются и удаляются. Если БД не в волуме, то ВМЕСТЕ С БД!
+.PHONY: down
+down: ## Контейнеры стопаются и удаляются. Если БД не в волуме, то ВМЕСТЕ С БД!
 	@docker-compose down
 
-start:  # Starting of built containers
+.PHONY: start
+start: ## Starting of built containers
 	@docker-compose start
 
-stop:   # Stopping of running containers without delete it
+.PHONY: stop
+stop: ## Stopping of running containers without delete it
 	@docker-compose stop
 
-restart: stop start    # ReStarting of built containers
+.PHONY: restart
+restart: stop start ## ReStarting of built containers
 
 
 #####################################
@@ -83,16 +93,24 @@ restart: stop start    # ReStarting of built containers
 ###                               ###
 #####################################
 
-connect_nginx:  # Connecting to nginx container
+.PHONY: connect_nginx
+connect_nginx: ## Connecting to nginx container
 	@docker exec -it $(container_nginx) sh
 
-connect_redis:  # Connecting to redis container
+.PHONY: connect_redis
+connect_redis: ## Connecting to redis container
 	@docker exec -it $(container_redis) sh
 
-connect_db:  # Connecting to DB container
+.PHONY: connect_db
+connect_db: ## Connecting to DB container
 	@docker exec -it $(container_db) bash
 
-connect_php:  # Connecting to PHP container (APP)
+.PHONY: connect_ch
+connect_ch: ## Connecting to Clickhouse container
+	@docker exec -it $(container_ch) bash
+
+.PHONY: connect_php
+connect_php: ## Connecting to PHP container (APP)
 	@docker exec -it $(container_php) bash
 
 
@@ -102,33 +120,46 @@ connect_php:  # Connecting to PHP container (APP)
 ###                               ###
 #####################################
 
-ownership: # Set ownership on folders and files
+.PHONY: ownership
+ownership: ## Set ownership on folders and files
 	@sudo chown -R $(USER):$(USER) ./
 	@sudo find ./containers/* -type d -exec chmod 775 {} \;
 	@sudo find ./containers/* -type f -exec chmod 664 {} \;
 	@sudo find ./dumps/* -type d -exec chmod 775 {} \;
 	@sudo find ./logs/* -type f -exec chmod 666 {} \;
 
-up_d:  # Up containers with shell detach
+.PHONY: up_d
+up_d: ## Up containers with shell detach
 	@docker-compose up -d
 
-get_dump:  # Create and save an archive with SQL Dump file of current state of DB
+.PHONY: get_dump
+get_dump: ## Create and save an archive with SQL Dump file of current state of DB
 	@docker-compose exec $(db_service) get-dump.sh
 
-drop_images:  # Drop all images of current project
-	@docker rmi $(container_redis) $(container_db) $(container_nginx) $(container_php)
+.PHONY: drop_images
+drop_images: ## Drop all images of current project
+	@docker rmi $(container_redis) $(container_db) $(container_ch) $(container_nginx) $(container_php)
 
-drop_volume_db:  # Drop DB volume
+.PHONY: drop_volume_db
+drop_volume_db: ## Drop DB volume
 	@docker volume rm $(volume_db)
 
-drop_volume_redis:  # Drop Redis volume
+.PHONY: drop_volume_ch
+drop_volume_ch: ## Drop ClickHouse volume
+	@docker volume rm $(volume_ch)
+
+.PHONY: drop_volume_redis
+drop_volume_redis: ## Drop Redis volume
 	@docker volume rm $(volume_redis)
 
-drop_volumes: drop_volume_db drop_volume_redis  # Drop DB and Redis volumes
+.PHONY: drop_volumes
+drop_volumes: drop_volume_db drop_volume_ch drop_volume_redis ## Drop all volumes
 
-clean: down drop_images drop_volumes  # Drop DB, Redis volumes and related images
+.PHONY: drop
+drop: down drop_images ## Down all containers, Drop all images
 
-drop: down drop_images  # Drop DB and related images
+.PHONY: clean
+clean: down drop_images drop_volumes ## Down all containers, Drop all images and related volumes
 
 
 #####################################
@@ -137,21 +168,33 @@ drop: down drop_images  # Drop DB and related images
 ###                               ###
 #####################################
 
-drop_vendor:  # Delete vendor folder
+.PHONY: drop_vendor
+drop_vendor: ## Delete vendor folder
 	@rm -rf ../app/vendor
 
-composer_install: # Install composer dependency >> ./vendors
+.PHONY: composer_install
+composer_install: ## Install composer dependency >> ./vendors
 	@docker-compose exec $(php_service) composer install
 
-composer_update: # Update composer dependency >> ./vendors
+.PHONY: composer_update
+composer_update: ## Update composer dependency >> ./vendors
 	@docker-compose exec $(php_service) composer update
 
-artisan: # Show artisan list
+.PHONY: artisan
+artisan: ## Show artisan list
 	@docker-compose exec $(php_service) php artisan
 
-key_gen: # Generate APP key
+.PHONY: key_gen
+key_gen: ## Generate APP key
 	@docker-compose exec $(php_service) php artisan key:generate
 
-run_migrations: # Run migrations
+.PHONY: run_migrations
+run_migrations: ## Run migrations
 	@docker-compose exec $(php_service) php artisan migrate
 
+# Helpers
+.PHONY: help
+help: ## Show this message
+	@printf "\nUse: make <command>\n"
+	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[44m%-18s\033[0m %s\n", $$1, $$2}'
+	@printf "\n"

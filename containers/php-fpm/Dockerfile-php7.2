@@ -17,6 +17,7 @@ RUN apt -y install \
     dnsutils \
     git \
     htop \
+    iputils-ping \
     libmcrypt-dev \
     libssl-dev \
     libtool \
@@ -34,6 +35,7 @@ RUN apt -y install \
     net-tools \
     nmap \
     smartmontools \
+    telnet \
     traceroute \
     sudo \
     wget \
@@ -51,7 +53,6 @@ RUN docker-php-ext-configure zip --with-libzip=/usr/include \
 # Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN apt -y install nodejs yarn
-RUN ln -s /usr/bin/node /usr/bin/nodejs
 RUN npm install -g npm@${NPM_VERSION}
 
 # Install redis (extension)

@@ -12,6 +12,8 @@ volumes:
     driver: local
   redis-data:
     driver: local
+  ch-data:
+    driver: local
 
 
 services:
@@ -120,5 +122,31 @@ services:
       - ./logs/php-fpm/supervisor:/var/log/supervisor
       - ./logs/php-fpm/xdebug:/var/log/xdebug
      #- /etc/letsencrypt:/etc/letsencrypt/live/domain.loc
+    networks:
+      - app-network
+
+
+  # Database service 'clickhouse'
+  ch:
+    build:
+      context: ./containers/clickhouse
+      dockerfile: Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE:-UTC}
+    container_name: ${PROJECT_NAME}_ch
+    env_file:
+      - ./containers/clickhouse/database.env
+    hostname: clickhouse
+    restart: unless-stopped
+    tty: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - "8123:8123"
+      - "9008:9008"
+      - "9009:9009"
+    volumes:
+      - ch-data:/var/lib/clickhouse
+      - /home/user/docker/data_ch:/data_ch
     networks:
       - app-network
