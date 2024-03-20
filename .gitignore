@@ -3,6 +3,7 @@ Makefile
 database.env
 
 containers/mysql/Dockerfile
+containers/clickhouse/Dockerfile
 containers/php-fpm/Dockerfile
 containers/nginx/configs
 

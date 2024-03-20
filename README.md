@@ -42,6 +42,8 @@
 * Настроить `Makefile` В `Configure section` указать параметр `project_name`. Значение то же самое, что и в предыдущем пункте.
 
 * Настроить `containers/mysql/database.env`
+* 
+* Настроить `containers/clickhouse/database.env`
 
 * Для настройки Nginx: нужные конфиги уже скопированы в папку `containers/nginx/configs`. По умолчанию, в них предусмотрена поддержка проекта с одним доменом. В этом случае ничего дополнительно делать не нужно. В файле `local.conf` параметр `server_name` по умолчанию указан как универсальный `_`. Но, в случае, когда на проекте предполагается использование поддомена (например `m.domain.loc`), базовые конфиги nginx нужно заменить расширенными, а также, настроить их:
   1. Запустите скрипт `init_ext_nginx.sh`. Он пересоздаст рабочие конфиги nginx для поддержки поддомена. См. папку в папку `containers/nginx/configs`.
@@ -53,6 +55,9 @@
 
 * cd containers/mysql
 * Создать симлинк на одну из СУБД: `ln -s Dockerfile-mariadb Dockerfile` or `ln -s Dockerfile-mysql Dockerfile`
+
+* cd containers/clickhouse
+* Создать симлинк для clickhouse: `ln -s Dockerfile-ch Dockerfile`
 
 ### Настроить (или проверить) конфиги проекта Laravel
 * cd myProject/app
