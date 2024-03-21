@@ -3,5 +3,9 @@ FROM bitnami/clickhouse:latest
 ARG TIME_ZONE
 ENV TZ=$TIME_ZONE
 
+# Copy custom config files into container
+COPY transactions.xml    /etc/clickhouse-server/conf.d/transactions.xml
+#COPY config.xml         /etc/clickhouse-server/conf.d/config.xml
+
 # Expose port and start clickhouse server
 EXPOSE 8123 9008 9009
