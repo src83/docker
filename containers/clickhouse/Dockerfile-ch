@@ -6,6 +6,10 @@ ENV TZ=$TIME_ZONE
 # Copy custom config files into container
 #COPY transactions.xml    /etc/clickhouse-server/conf.d/transactions.xml
 #COPY config.xml         /etc/clickhouse-server/conf.d/config.xml
+# Turn off reason:
+#Received exception from server (version 24.2.2):
+#Code: 999. DB::Exception: Received from localhost:9000. Coordination::Exception. Coordination::Exception: Cannot resolve any of provided ZooKeeper hosts due to DNS error. (KEEPER_EXCEPTION)
+
 
 # Expose port and start clickhouse server
 EXPOSE 8123 9008 9009
