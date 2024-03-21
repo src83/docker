@@ -4,7 +4,7 @@ ARG TIME_ZONE
 ENV TZ=$TIME_ZONE
 
 # Copy custom config files into container
-COPY transactions.xml    /etc/clickhouse-server/conf.d/transactions.xml
+#COPY transactions.xml    /etc/clickhouse-server/conf.d/transactions.xml
 #COPY config.xml         /etc/clickhouse-server/conf.d/config.xml
 
 # Expose port and start clickhouse server
