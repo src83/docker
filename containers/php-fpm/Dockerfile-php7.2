@@ -13,6 +13,7 @@ RUN apt update && apt -y upgrade
 RUN apt -y install --no-install-recommends apt-utils
 RUN apt -y install \
     cron \
+    clickhouse-client \
     supervisor \
     dnsutils \
     git \
