@@ -4,6 +4,7 @@ if [ $# -eq 0 ]; then
     cp .env.blank .env
     cp blank.Makefile Makefile
     cp containers/mysql/database.blank.env containers/mysql/database.env
+    cp containers/clickhouse/database.blank.env containers/clickhouse/database.env
 
     mkdir -p containers/nginx/configs
     cp containers/nginx/examples/1-main/domain/local.conf containers/nginx/configs

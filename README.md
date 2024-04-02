@@ -43,7 +43,7 @@
 * Настроить `Makefile` В `Configure section` указать параметр `project_name`. Значение то же самое, что и в предыдущем пункте.
 
 * Настроить `containers/mysql/database.env`
-* 
+ 
 * Настроить `containers/clickhouse/database.env`
 
 * Настроить `containers/clickhouse/database.env`
