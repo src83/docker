@@ -61,6 +61,7 @@
 * Создать симлинк для clickhouse: `ln -s Dockerfile-ch Dockerfile`
 
 ### Настроить (или проверить) конфиги проекта Laravel
+* В папку myProject/app склонировать (или развернуть иным способом) проект.
 * cd myProject/app
 * cp .env.example .env
 * Настроить `.env`
