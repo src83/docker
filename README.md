@@ -103,6 +103,15 @@ sudo docker run -it --rm --name certbot \
 
 ---
 
+**Необходимый минимум, чтобы заработал xDebug**
+
+1. PHP > Debug > Debug port: `9003,9001`
+2. PHP > Debug > DBGp Proxy > IDE key: `пусто`, Host: `пусто`, Port: `9001`
+3. PHP > Servers > Добавляем сервер > Name: `Docker`, Host: `_` , `(v)` Use path mappings, напротив `Project Files` рабочей папки проекта указываем Absolute path `/srv/app`
+4. Перезапускаем трубку (Start Listening for PHP Debug Connections) и всё... должно работать. Если что, смотрим лог.
+
+---
+
 ### Примечания
 
 **Установка docker-compose**
